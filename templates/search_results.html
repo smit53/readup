@@ -19,9 +19,16 @@
     <div class="books-container">
         {% for book in search_results %}
             <div class="book-card">
-                <img src="{{ book.image_url }}" alt="{{ book.title }}" class="book-image">
-                <h3>{{ book.title }}</h3>
-                <p>Author: {{ book.authors }}</p>
+                <a href="{{ url_for('book_details', book_id=book.book_id) }}">
+                    <img src="{{ book.image_url }}" alt="{{ book.title }}" class="book-image">
+                    <h3>{{ book.title }}</h3>
+                    <p>Author: {{ book.authors }}</p>
+                </a>
+                {% if is_user_logged_in() %}
+                    <a href="{{ url_for('toggle_bookmark', book_id=book.book_id) }}" class="{% if book.is_bookmarked %}bookmarked{% else %}bookmark{% endif %}" title="{% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}">
+                        {% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}
+                    </a>
+                {% endif %}
             </div>
         {% endfor %}
     </div>

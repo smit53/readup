@@ -1,23 +1,29 @@
+<!-- explore.html -->
 {% extends 'base.html' %}
 
 {% block content %}
-{% if is_user_logged_in() %}
     <div class="explore-section" id="explore-books">
         <h2>Explore Books</h2>
         <div class="books-container">
             {% for book in books %}
-                <a href="{{ url_for('book_details', book_id=book.book_id) }}" class="book-link">
-                    <div class="book-card">
+                <div class="book-card {% if book.is_bookmarked %}bookmarked{% endif %}">
+                    <a href="{{ url_for('book_details', book_id=book.book_id) }}">
                         <img src="{{ book.image_url }}" alt="{{ book.title }}" class="book-image">
                         <h3>{{ book.title }}</h3>
                         <p>Author: {{ book.authors }}</p>
-                    </div>
-                </a>
+                    </a>
+                    {% if is_user_logged_in() %}
+                        <a href="{{ url_for('toggle_bookmark', book_id=book.book_id) }}" class="{% if book.is_bookmarked %}bookmarked{% else %}bookmark{% endif %}" title="{% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}">
+                            {% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}
+                        </a>
+                    {% endif %}
+                </div>
             {% endfor %}
         </div>
+
         <div class="pagination">
             {% if page > 1 %}
-                <a href="{{ url_for('explore', page=1) }}">1</a>
+                <a href="{{ url_for('explore', page=1) }}">First</a>
                 <a href="{{ url_for('explore', page=page-1) }}">Previous</a>
             {% endif %}
         
@@ -43,10 +49,6 @@
                 <a href="{{ url_for('explore', page=page+1) }}">Next</a>
                 <a href="{{ url_for('explore', page=total_pages) }}">Last</a>
             {% endif %}
-        </div>                            
+        </div>
     </div>
-    {% else %}
-        <p>Please <a href="{{ url_for('login') }}">log in</a> to access this page.</p>
-    {% endif %}
-    
 {% endblock %}

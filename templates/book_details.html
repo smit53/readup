@@ -1,3 +1,4 @@
+<!-- book_details.html -->
 {% extends 'base.html' %}
 
 {% block title %}{{ book.title }} - Book Details{% endblock %}
@@ -13,8 +14,12 @@
         <p>Language: {{ book.language_code }} </p>
         <p>Publication year: {{ book.original_publication_year }}</p>
         <!-- Add more book details as needed -->
+
+        {% if is_user_logged_in() %}
+            <a href="{{ url_for('toggle_bookmark', book_id=book.book_id) }}" class="{% if book.is_bookmarked %}bookmarked{% else %}bookmark{% endif %}" title="{% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}">
+                {% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}
+            </a>
+        {% endif %}
     </div>
 </div>
-
 {% endblock %}
-

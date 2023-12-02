@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, jsonify, render_template, request, redirect, url_for, session, flash
 import mysql.connector
 import math
 import secrets
@@ -28,9 +28,15 @@ def get_books(page=1, per_page=20):
     books = cursor.fetchall()
     return books
     
-def get_book_by_id(book_id):
-    cursor.execute(f'SELECT * FROM books WHERE book_id = {book_id}')
+def get_book_by_id(book_id, user_id=None):
+    cursor.execute('SELECT * FROM Books WHERE book_id = %s', (book_id,))
     book = cursor.fetchone()
+
+    if user_id:
+        cursor.execute('SELECT * FROM Bookmarks WHERE user_id = %s AND book_id = %s', (user_id, book_id))
+        bookmark_info = cursor.fetchone()
+        book['is_bookmarked'] = bool(bookmark_info)
+
     return book
 
 def get_total_books():
@@ -54,6 +60,12 @@ def custom_max(a, b):
 def custom_min(a, b):
     return min(a, b)
 
+def get_books(page=1, per_page=20, user_id=None):
+    offset = (page - 1) * per_page
+    cursor.execute(f'SELECT b.*, bm.user_id IS NOT NULL as is_bookmarked FROM books b LEFT JOIN bookmarks bm ON b.book_id = bm.book_id AND bm.user_id = %s LIMIT {per_page} OFFSET {offset}', (user_id,))
+    books = cursor.fetchall()
+    return books
+
 # Pass the custom functions to the Jinja2 environment
 app.jinja_env.globals.update(custom_max=custom_max, custom_min=custom_min)
 
@@ -68,18 +80,95 @@ def explore():
     total_books = get_total_books()
     total_pages = math.ceil(total_books / per_page)
 
-    books = get_books(page=page, per_page=per_page)
+    user_id = session.get('user_id')  # Get user_id from the session if available
 
-    return render_template('explore.html', books=books, page=page, total_pages=total_pages)
+    books = get_books(page=page, per_page=per_page, user_id=user_id)
 
+    return render_template('explore.html', books=books, page=page, total_pages=total_pages, user_id=user_id)
+
+
+def get_user_bookmarks(user_id):
+    cursor.execute('SELECT book_id FROM Bookmarks WHERE user_id = %s', (user_id,))
+    bookmarks = set(row['book_id'] for row in cursor.fetchall())
+    return bookmarks
+
+@app.route('/bookmark/<int:book_id>')
+def bookmark(book_id):
+    if not is_user_logged_in():
+        flash('Please log in to bookmark a book.', 'error')
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+
+    # Check if the bookmark already exists
+    cursor.execute('SELECT * FROM Bookmarks WHERE user_id = %s AND book_id = %s', (user_id, book_id))
+    existing_bookmark = cursor.fetchone()
+
+    if existing_bookmark:
+        # Remove the bookmark
+        cursor.execute('DELETE FROM Bookmarks WHERE user_id = %s AND book_id = %s', (user_id, book_id))
+        conn.commit()
+        flash('Bookmark removed successfully!', 'success')
+    else:
+        # Add the bookmark
+        cursor.execute('INSERT INTO Bookmarks (user_id, book_id) VALUES (%s, %s)', (user_id, book_id))
+        conn.commit()
+        flash('Bookmarked successfully!', 'success')
+
+    # Redirect back to the same page after bookmarking
+    referrer = request.referrer
+    return redirect(referrer)
+
+@app.route('/mylist')
+def my_list():
+    if not is_user_logged_in():
+        flash('Please log in to access your list.', 'error')
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+
+    # Fetch only the bookmarked books from the database for the logged-in user
+    cursor.execute('SELECT * FROM bookmarks bm JOIN books b ON b.book_id = bm.book_id WHERE bm.user_id = %s;', (user_id,))
+    books = cursor.fetchall()
+
+    # Provide default values for page and total_pages
+    page = 1
+    total_pages = 1
+
+    return render_template('my_list.html', books=books, page=page, total_pages=total_pages)
+
+@app.route('/toggle_bookmark/<int:book_id>')
+def toggle_bookmark(book_id):
+    if not is_user_logged_in():
+        flash('Please log in to bookmark a book.', 'error')
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+
+    # Check if the bookmark already exists
+    cursor.execute('SELECT * FROM Bookmarks WHERE user_id = %s AND book_id = %s', (user_id, book_id))
+    existing_bookmark = cursor.fetchone()
+
+    if existing_bookmark:
+        # Remove the bookmark
+        cursor.execute('DELETE FROM Bookmarks WHERE user_id = %s AND book_id = %s', (user_id, book_id))
+        conn.commit()
+        # flash('Bookmark removed successfully!', 'success')
+    else:
+        # Add the bookmark
+        cursor.execute('INSERT INTO Bookmarks (user_id, book_id) VALUES (%s, %s)', (user_id, book_id))
+        conn.commit()
+        # flash('Bookmarked successfully!', 'success')
+
+    return redirect(request.referrer)
 
 @app.route('/book/<int:book_id>')
 def book_details(book_id):
     if not is_user_logged_in():
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('login'))
-    
-    book = get_book_by_id(book_id)
+    user_id = session['user_id']
+    book = get_book_by_id(book_id,user_id)
 
     if book:
         return render_template('book_details.html', book=book)
@@ -90,9 +179,10 @@ def book_details(book_id):
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     if is_user_logged_in():
+        user_id = session['user_id']
         if request.method == 'POST':
             search_query = request.form.get('search_query')
-            cursor.execute('SELECT * FROM Books WHERE title LIKE %s OR authors LIKE %s', ('%' + search_query + '%', '%' + search_query + '%'))
+            cursor.execute('SELECT b.*, CASE WHEN bm.user_id = %s THEN 1 ELSE 0 END AS is_bookmarked FROM books b LEFT JOIN bookmarks bm ON b.book_id = bm.book_id WHERE title LIKE %s OR authors LIKE %s;', (user_id, f'%{search_query}%', f'%{search_query}%'))
             search_results = cursor.fetchall()
 
             if not search_results:
@@ -106,18 +196,19 @@ def search():
         flash('Please log in to use the search functionality.', 'error')
         return redirect(url_for('login'))
 
-@app.route('/search_results', methods=['GET'])
-def search_results():
-    if not is_user_logged_in():
-        flash('Please log in to access this page.', 'error')
-        return redirect(url_for('login'))
-    query = request.args.get('query', '')
+# @app.route('/search_results', methods=['GET'])
+# def search_results():
+#     if not is_user_logged_in():
+#         flash('Please log in to access this page.', 'error')
+#         return redirect(url_for('login'))
+#     user_id = session['user_id']
+#     query = request.args.get('query', '')
     
-    # Perform a search based on the query (customize this based on your needs)
-    cursor.execute('SELECT * FROM books WHERE title LIKE %s OR authors LIKE %s', (f'%{query}%', f'%{query}%'))
-    search_results = cursor.fetchall()
-
-    return render_template('search_results.html', query=query, results=search_results)
+#     # Perform a search based on the query (customize this based on your needs)
+#     cursor.execute('SELECT b.*, CASE WHEN bm.user_id = %s THEN 1 ELSE 0 END AS is_bookmarked FROM books b LEFT JOIN bookmarks bm ON b.book_id = bm.book_id WHERE title LIKE %s OR authors LIKE %s;', (user_id, f'%{query}%', f'%{query}%'))
+#     search_results = cursor.fetchall()
+#     print(search_results)
+#     return render_template('search_results.html', query=query, results=search_results)
 
 
 @app.route('/login', methods=['GET', 'POST'])

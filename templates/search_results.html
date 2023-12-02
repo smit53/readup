@@ -4,20 +4,27 @@
 {% block title %}Search Results - Library Management{% endblock %}
 
 {% block content %}
-
-<div class="search-results-section">
     <h2>Search Results for "{{ query }}"</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <div class="books-container">
-        {% for book in results %}
+        {% for book in search_results %}
             <div class="book-card">
-                <a href="{{ url_for('book_details', book_id=book.book_id) }}" class="book-link">
-                    <img src="{{ book.image_url }}" alt="{{ book.title }}" class="book-image">
-                    <h3>{{ book.title }}</h3>
-                    <p>Author: {{ book.authors }}</p>
-                </a>
+                <img src="{{ book.image_url }}" alt="{{ book.title }}" class="book-image">
+                <h3>{{ book.title }}</h3>
+                <p>Author: {{ book.authors }}</p>
             </div>
         {% endfor %}
     </div>
-</div>
 
+    <a href="{{ url_for('explore') }}" class="back-to-explore">Back to Explore</a>
 {% endblock %}

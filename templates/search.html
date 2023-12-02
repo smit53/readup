@@ -4,12 +4,20 @@
 {% block title %}Search - Library Management{% endblock %}
 
 {% block content %}
-<div class="search-section" id="search-books">
-    <h2>Search Books</h2>
-    <form action="{{ url_for('search_results') }}" method="GET">
-        <label for="search_query">Search by Title or Autor:</label>
-        <input type="text" id="search_query" name="query" required>
+    <h2>Search for Books</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="POST" action="{{ url_for('search') }}">
+        <label for="search_query">Search by Title or Author:</label>
+        <input type="text" id="search_query" name="search_query" required>
+
         <button type="submit">Search</button>
     </form>
-</div>
 {% endblock %}

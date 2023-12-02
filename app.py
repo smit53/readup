@@ -87,12 +87,24 @@ def book_details(book_id):
         # Redirect to explore page if the book is not found
         return redirect(url_for('explore'))
 
-@app.route('/search')
+@app.route('/search', methods=['GET', 'POST'])
 def search():
-    if not is_user_logged_in():
-        flash('Please log in to access this page.', 'error')
+    if is_user_logged_in():
+        if request.method == 'POST':
+            search_query = request.form.get('search_query')
+            cursor.execute('SELECT * FROM Books WHERE title LIKE %s OR authors LIKE %s', ('%' + search_query + '%', '%' + search_query + '%'))
+            search_results = cursor.fetchall()
+
+            if not search_results:
+                flash('No results found. Please try a different search query.', 'info')
+                return redirect(url_for('search'))
+
+            return render_template('search_results.html', search_results=search_results, query=search_query)
+        
+        return render_template('search.html')
+    else:
+        flash('Please log in to use the search functionality.', 'error')
         return redirect(url_for('login'))
-    return render_template('search.html')
 
 @app.route('/search_results', methods=['GET'])
 def search_results():
@@ -107,22 +119,6 @@ def search_results():
 
     return render_template('search_results.html', query=query, results=search_results)
 
-# @app.route('/login', methods=['GET', 'POST'])
-# def login():
-#     if request.method == 'POST':
-#         username = request.form.get('username')
-#         password = request.form.get('password')
-
-#         user = get_user_by_username(username)
-#         print(user)
-#         if user and username == user['username'] and user['password'] == password:
-#             session['user_id'] = user['user_id']
-#             flash('Login successful', 'success')
-#             return redirect(url_for('explore'))  # Redirect to explore page after successful login
-#         else:
-#             flash('Invalid username or password', 'error')
-
-#     return render_template('login.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

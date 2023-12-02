@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="explore-section" id="explore-books">
+        <h2>Explore Books</h2>
+        <div class="books-container">
+            {% for book in books %}
+                <a href="{{ url_for('book_details', book_id=book.book_id) }}" class="book-link">
+                    <div class="book-card">
+                        <img src="{{ book.image_url }}" alt="{{ book.title }}" class="book-image">
+                        <h3>{{ book.title }}</h3>
+                        <p>Author: {{ book.authors }}</p>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+        <div class="pagination">
+            {% if page > 1 %}
+                <a href="{{ url_for('explore', page=1) }}">1</a>
+                <a href="{{ url_for('explore', page=page-1) }}">Previous</a>
+            {% endif %}
+        
+            {% set start_page = custom_max(page - 2, 1) %}
+            {% set end_page = custom_min(total_pages, start_page + 4) %}
+        
+            {% for num in range(start_page, end_page + 1) %}
+                {% if num == page %}
+                    <span class="current-page">{{ num }}</span>
+                {% else %}
+                    <a href="{{ url_for('explore', page=num) }}">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+        
+            {% if end_page < total_pages - 1 %}
+                <span class="ellipsis">...</span>
+                <a href="{{ url_for('explore', page=total_pages) }}">{{ total_pages }}</a>
+            {% elif end_page < total_pages %}
+                <a href="{{ url_for('explore', page=total_pages) }}">{{ total_pages }}</a>
+            {% endif %}
+        
+            {% if page < total_pages %}
+                <a href="{{ url_for('explore', page=page+1) }}">Next</a>
+                <a href="{{ url_for('explore', page=total_pages) }}">Last</a>
+            {% endif %}
+        </div>                            
+    </div>
+    
+{% endblock %}

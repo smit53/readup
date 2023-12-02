@@ -162,11 +162,11 @@ def get_user_by_username(username):
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        username = request.form.get('username')
+        username = request.form.get('username').lower()
         password = request.form.get('password')
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
-        email = request.form.get('email')
+        first_name = request.form.get('first_name').capitalize()
+        last_name = request.form.get('last_name').capitalize()
+        email = request.form.get('email').lower()
         dob = request.form.get('dob')  # Assuming you have a date of birth field
 
         # Check if the username is already taken
@@ -191,6 +191,107 @@ def signup():
 
     return render_template('signup.html')
 
+@app.route('/profile')
+def profile():
+    if is_user_logged_in():
+        user_id = session['user_id']
+        
+        # Fetch user details from the Users table
+        cursor.execute('SELECT * FROM Users WHERE user_id = %s', (user_id,))
+        user = cursor.fetchone()
+
+        return render_template('profile.html', user=user)
+    else:
+        flash('Please log in to access your profile.', 'error')
+        return redirect(url_for('login'))
+
+@app.route('/update_profile', methods=['GET', 'POST'])
+def update_profile():
+    if is_user_logged_in():
+        user_id = session['user_id']
+
+        if request.method == 'POST':
+            # Get updated details from the form
+            updated_first_name = request.form.get('updated_first_name')
+            updated_last_name = request.form.get('updated_last_name')
+            updated_email = request.form.get('updated_email')
+
+            # Check if nothing is being updated
+            if not any([updated_first_name, updated_last_name, updated_email]):
+                flash('No changes made. Please update at least one field.', 'info')
+                return redirect(url_for('update_profile'))
+
+            # Update the user details in the Users table for non-empty fields
+            update_query = 'UPDATE Users SET'
+            update_values = []
+
+            if updated_first_name:
+                update_query += ' first_name = %s,'
+                update_values.append(updated_first_name.capitalize())
+
+            if updated_last_name:
+                update_query += ' last_name = %s,'
+                update_values.append(updated_last_name.capitalize())
+
+            if updated_email:
+                update_query += ' email = %s,'
+                update_values.append(updated_email.lower())
+
+            # Remove the trailing comma and add the WHERE clause
+            update_query = update_query.rstrip(',')
+            update_query += ' WHERE user_id = %s'
+
+            # Append user_id to the update_values list
+            update_values.append(user_id)
+
+            # Execute the update query
+            cursor.execute(update_query, tuple(update_values))
+            conn.commit()
+
+            flash('Profile updated successfully.', 'success')
+            return redirect(url_for('profile'))
+
+        return render_template('update_profile.html')
+    else:
+        flash('Please log in to access your profile.', 'error')
+        return redirect(url_for('login'))
+
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if is_user_logged_in():
+        user_id = session['user_id']
+
+        if request.method == 'POST':
+            # Get the current and new passwords from the form
+            current_password = request.form.get('current_password')
+            new_password = request.form.get('new_password')
+            confirm_password = request.form.get('confirm_password')
+
+            # Validate the current password (you may want to enhance this validation)
+            cursor.execute('SELECT password FROM UserCredentials WHERE user_id = %s', (user_id,))
+            stored_password = cursor.fetchone()['password']
+
+            if not stored_password == current_password:
+                flash('Incorrect current password. Please try again.', 'error')
+                return redirect(url_for('change_password'))
+
+            if not new_password == confirm_password:
+                flash('Passwords dont match, Try again!', 'error')
+                return redirect(url_for('change_password'))
+
+            # Update the password in the UserCredentials table
+            hashed_new_password = new_password
+            cursor.execute('UPDATE UserCredentials SET password = %s WHERE user_id = %s',
+                           (hashed_new_password, user_id))
+            conn.commit()
+
+            flash('Password changed successfully.', 'success')
+            return redirect(url_for('logout'))
+
+        return render_template('change_password.html')
+    else:
+        flash('Please log in to change your password.', 'error')
+        return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)

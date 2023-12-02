@@ -1,0 +1,33 @@
+<!-- update_profile.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Update Your Profile</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('update_profile') }}">
+        <!-- Add input fields for updating details (e.g., first name, last name, email, etc.) -->
+        <label for="updated_first_name">Updated First Name:</label>
+        <input type="text" id="updated_first_name" name="updated_first_name">
+
+        <label for="updated_last_name">Updated Last Name:</label>
+        <input type="text" id="updated_last_name" name="updated_last_name">
+
+        <label for="updated_email">Updated Email:</label>
+        <input type="email" id="updated_email" name="updated_email">
+
+        <!-- Add other input fields as needed -->
+
+        <button type="submit">Update</button>
+        <a href="{{ url_for('profile') }}">Cancel</a>
+    </form>
+{% endblock %}

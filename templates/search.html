@@ -1,0 +1,15 @@
+<!-- search.html -->
+{% extends 'base.html' %}
+
+{% block title %}Search - Library Management{% endblock %}
+
+{% block content %}
+<div class="search-section" id="search-books">
+    <h2>Search Books</h2>
+    <form action="{{ url_for('search_results') }}" method="GET">
+        <label for="search_query">Search by Title or Autor:</label>
+        <input type="text" id="search_query" name="query" required>
+        <button type="submit">Search</button>
+    </form>
+</div>
+{% endblock %}

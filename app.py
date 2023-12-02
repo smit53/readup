@@ -69,5 +69,20 @@ def book_details(book_id):
         # Redirect to explore page if the book is not found
         return redirect(url_for('explore'))
 
+@app.route('/search')
+def search():
+    return render_template('search.html')
+
+@app.route('/search_results', methods=['GET'])
+def search_results():
+    query = request.args.get('query', '')
+    
+    # Perform a search based on the query (customize this based on your needs)
+    cursor.execute('SELECT * FROM books WHERE title LIKE %s OR authors LIKE %s', (f'%{query}%', f'%{query}%'))
+    search_results = cursor.fetchall()
+
+    return render_template('search_results.html', query=query, results=search_results)
+
+
 if __name__ == '__main__':
     app.run(debug=True)

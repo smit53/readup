@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{% if is_user_logged_in() %}
     <div class="explore-section" id="explore-books">
         <h2>Explore Books</h2>
         <div class="books-container">
@@ -44,5 +45,8 @@
             {% endif %}
         </div>                            
     </div>
+    {% else %}
+        <p>Please <a href="{{ url_for('login') }}">log in</a> to access this page.</p>
+    {% endif %}
     
 {% endblock %}

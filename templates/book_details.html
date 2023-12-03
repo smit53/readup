@@ -4,22 +4,31 @@
 {% block title %}{{ book.title }} - Book Details{% endblock %}
 
 {% block content %}
-<div class="book-details-section">
-    <h2>{{ book.title }} - Book Details</h2>
-    <div class="book-details">
-        <img src="{{ book.image_url }}" alt="{{ book.title }}" class="book-image">
-        <p>Author: {{ book.authors }}</p>
-        <p>Rating: {{ book.average_rating }}</book></p>
-        <p>Rating count: {{ book.ratings_count }}</p>
-        <p>Language: {{ book.language_code }} </p>
-        <p>Publication year: {{ book.original_publication_year }}</p>
-        <!-- Add more book details as needed -->
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-end mb-3">
+                        {% if is_user_logged_in() %}
+                            <a href="{{ url_for('toggle_bookmark', book_id=book.book_id) }}" class="btn {% if book.is_bookmarked %}btn-danger{% else %}btn-outline-danger{% endif %}" title="{% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}">
+                                {% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}
+                            </a>
+                        {% endif %}
+                    </div>
 
-        {% if is_user_logged_in() %}
-            <a href="{{ url_for('toggle_bookmark', book_id=book.book_id) }}" class="{% if book.is_bookmarked %}bookmarked{% else %}bookmark{% endif %}" title="{% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}">
-                {% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}
-            </a>
-        {% endif %}
+                    <h2 class="card-title">{{ book.title }} - Book Details</h2>
+                    <img src="{{ book.image_url }}" alt="{{ book.title }}" class="img-fluid mb-4 rounded">
+                    
+                    <p><strong>Author:</strong> {{ book.authors }}</p>
+                    <p><strong>Rating:</strong> {{ book.average_rating }}</p>
+                    <p><strong>Rating count:</strong> {{ book.ratings_count }}</p>
+                    <p><strong>Language:</strong> {{ book.language_code }}</p>
+                    <p><strong>Publication year:</strong> {{ book.original_publication_year }}</p>
+                    <!-- Add more book details as needed -->
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -4,33 +4,55 @@
 {% block title %}Sign Up - Library Management{% endblock %}
 
 {% block content %}
-<div class="signup-section" id="signup">
-    <h2>Sign Up</h2>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="flash-messages">
-                {% for message in messages %}
-                    <div class="flash-message {{ message[1] }}">{{ message[0] }}</div>
-                {% endfor %}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Sign Up</h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            <div class="alert alert-danger">
+                                {% for message in messages %}
+                                    {{ message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                    <form action="{{ url_for('signup') }}" method="POST">
+                        <div class="form-group">
+                            <label for="username">Username<span class="text-danger">*</span>:</label>
+                            <input type="text" id="username" name="username" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password<span class="text-danger">*</span>:</label>
+                            <input type="password" id="password" name="password" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="first_name">First Name<span class="text-danger">*</span>:</label>
+                            <input type="text" id="first_name" name="first_name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="last_name">Last Name<span class="text-danger">*</span>:</label>
+                            <input type="text" id="last_name" name="last_name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email<span class="text-danger">*</span>:</label>
+                            <input type="email" id="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dob">Date of Birth<span class="text-danger">*</span>:</label>
+                            <input type="date" id="dob" name="dob" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Sign Up</button>
+                    </form>
+                </div>
             </div>
-        {% endif %}
-    {% endwith %}
-    <form action="{{ url_for('signup') }}" method="POST">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <label for="first_name">First Name:</label>
-        <input type="text" id="first_name" name="first_name" required>
-        <label for="last_name">Last Name:</label>
-        <input type="text" id="last_name" name="last_name" required>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <label for="dob">Date of Birth:</label>
-        <input type="date" id="dob" name="dob" required>
-        <button type="submit">Sign Up</button>
-    </form>
+        </div>
+    </div>
 </div>
 
 {% endblock %}
-

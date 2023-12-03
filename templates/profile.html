@@ -1,20 +1,32 @@
 <!-- profile.html -->
 {% extends 'base.html' %}
 
-{% block content %}
-    {% if is_user_logged_in() %}
-        <div class="profile-section" id="user-profile">
-            <h2>Your Profile</h2>
-            <p><strong>Username:</strong> {{ user.username }}</p>
-            <p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
-            <p><strong>Email:</strong> {{ user.email }}</p>
-            <p><strong>Date of Birth:</strong> {{ user.dob.strftime('%d-%b-%Y') }}</p>
-            <!-- Add other user details as needed -->
+{% block title %}Your Profile{% endblock %}
 
-            <a href="{{ url_for('update_profile') }}">Update Profile</a>
-            <a href="{{ url_for('change_password') }}">Change Password</a>
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            {% if is_user_logged_in() %}
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h2 class="card-title">Welcome {{ user.first_name }}</h2>
+                        <p class="card-text"><strong>Username:</strong> {{ user.username }}</p>
+                        <p class="card-text"><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+                        <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
+                        <p class="card-text"><strong>Date of Birth:</strong> {{ user.dob.strftime('%d-%b-%Y') }}</p>
+                        <!-- Add other user details as needed -->
+
+                        <div class="d-flex justify-content-center mt-4">
+                            <a href="{{ url_for('update_profile') }}" class="btn btn-primary mr-3">Update Profile</a>
+                            <a href="{{ url_for('change_password') }}" class="btn btn-danger">Change Password</a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-center">Please <a href="{{ url_for('login') }}">log in</a> to access your profile.</p>
+            {% endif %}
         </div>
-    {% else %}
-        <p>Please <a href="{{ url_for('login') }}">log in</a> to access your profile.</p>
-    {% endif %}
+    </div>
+</div>
 {% endblock %}

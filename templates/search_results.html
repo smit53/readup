@@ -4,34 +4,46 @@
 {% block title %}Search Results - Library Management{% endblock %}
 
 {% block content %}
-    <h2>Search Results for "{{ query }}"</h2>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Search Results for "{{ query }}"</h2>
     
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            {% for category, message in messages %}
-                <div class="flash-message {{ category }}">
-                    {{ message }}
+            <div class="row">
+                <div class="col-md-6 offset-md-3">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} text-center">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
                 </div>
-            {% endfor %}
+            </div>
         {% endif %}
     {% endwith %}
 
-    <div class="books-container">
+    <div class="row">
         {% for book in search_results %}
-            <div class="book-card">
-                <a href="{{ url_for('book_details', book_id=book.book_id) }}">
-                    <img src="{{ book.image_url }}" alt="{{ book.title }}" class="book-image">
-                    <h3>{{ book.title }}</h3>
-                    <p>Author: {{ book.authors }}</p>
-                </a>
-                {% if is_user_logged_in() %}
-                    <a href="{{ url_for('toggle_bookmark', book_id=book.book_id) }}" class="{% if book.is_bookmarked %}bookmarked{% else %}bookmark{% endif %}" title="{% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}">
-                        {% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}
-                    </a>
-                {% endif %}
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <img src="{{ book.image_url }}" class="card-img-top" alt="{{ book.title }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ book.title }}</h5>
+                        <p class="card-text"><strong>Author:</strong> {{ book.authors }}</p>
+                        <a href="{{ url_for('book_details', book_id=book.book_id) }}" class="btn btn-primary btn-block">Details</a>
+
+                        {% if is_user_logged_in() %}
+                            <a href="{{ url_for('toggle_bookmark', book_id=book.book_id) }}" class="btn {% if not book.is_bookmarked %}btn-outline-danger{% else %}btn-danger{% endif %} mt-2 btn-block" title="{% if not book.is_bookmarked %}Bookmark{% else %}Bookmarked{% endif %}">
+                                {% if not book.is_bookmarked %}Bookmark{% else %}Bookmarked{% endif %}
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         {% endfor %}
     </div>
 
-    <a href="{{ url_for('explore') }}" class="back-to-explore">Back to Explore</a>
+    <a href="{{ url_for('explore') }}" class="btn btn-secondary mt-3">Back to Explore</a>
+</div>
+
 {% endblock %}

@@ -1,54 +1,59 @@
 <!-- explore.html -->
 {% extends 'base.html' %}
 
-{% block content %}
-    <div class="explore-section" id="explore-books">
-        <h2>Explore Books</h2>
-        <div class="books-container">
-            {% for book in books %}
-                <div class="book-card {% if book.is_bookmarked %}bookmarked{% endif %}">
-                    <a href="{{ url_for('book_details', book_id=book.book_id) }}">
-                        <img src="{{ book.image_url }}" alt="{{ book.title }}" class="book-image">
-                        <h3>{{ book.title }}</h3>
-                        <p>Author: {{ book.authors }}</p>
-                    </a>
-                    {% if is_user_logged_in() %}
-                        <a href="{{ url_for('toggle_bookmark', book_id=book.book_id) }}" class="{% if book.is_bookmarked %}bookmarked{% else %}bookmark{% endif %}" title="{% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}">
-                            {% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}
-                        </a>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
+{% block title %}Explore - Library Management{% endblock %}
 
-        <div class="pagination">
-            {% if page > 1 %}
-                <a href="{{ url_for('explore', page=1) }}">First</a>
-                <a href="{{ url_for('explore', page=page-1) }}">Previous</a>
-            {% endif %}
-        
-            {% set start_page = custom_max(page - 2, 1) %}
-            {% set end_page = custom_min(total_pages, start_page + 4) %}
-        
-            {% for num in range(start_page, end_page + 1) %}
-                {% if num == page %}
-                    <span class="current-page">{{ num }}</span>
-                {% else %}
-                    <a href="{{ url_for('explore', page=num) }}">{{ num }}</a>
-                {% endif %}
-            {% endfor %}
-        
-            {% if end_page < total_pages - 1 %}
-                <span class="ellipsis">...</span>
-                <a href="{{ url_for('explore', page=total_pages) }}">{{ total_pages }}</a>
-            {% elif end_page < total_pages %}
-                <a href="{{ url_for('explore', page=total_pages) }}">{{ total_pages }}</a>
-            {% endif %}
-        
-            {% if page < total_pages %}
-                <a href="{{ url_for('explore', page=page+1) }}">Next</a>
-                <a href="{{ url_for('explore', page=total_pages) }}">Last</a>
-            {% endif %}
-        </div>
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="mb-4">Explore Books</h2>
+
+    <div class="row">
+        {% for book in books %}
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <img src="{{ book.image_url }}" class="card-img-top" alt="{{ book.title }}">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <h5 class="card-title">{{ book.title }}</h5>
+                        <p class="card-text">Author: {{ book.authors }}</p>
+                        <a href="{{ url_for('book_details', book_id=book.book_id) }}" class="btn btn-primary mt-auto">Details</a>
+
+                        {% if is_user_logged_in() %}
+                            <a href="{{ url_for('toggle_bookmark', book_id=book.book_id) }}" class="btn {% if book.is_bookmarked %}btn-danger{% else %}btn-outline-danger{% endif %} mt-2" title="{% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}">
+                                {% if book.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
     </div>
+
+    <div class="pagination mt-4">
+        {% if page > 1 %}
+            <a href="{{ url_for('explore', page=1) }}" class="btn btn-outline-primary">First</a>
+            <a href="{{ url_for('explore', page=page-1) }}" class="btn btn-outline-primary">Previous</a>
+        {% endif %}
+
+        {% set start_page = custom_max(page - 2, 1) %}
+        {% set end_page = custom_min(total_pages, start_page + 4) %}
+
+        {% for num in range(start_page, end_page + 1) %}
+            <a href="{{ url_for('explore', page=num) }}" class="btn {% if num == page %}btn-primary{% else %}btn-outline-primary{% endif %}">{{ num }}</a>
+        {% endfor %}
+
+        {% if end_page < total_pages - 1 %}
+            <span class="ellipsis">...</span>
+            <a href="{{ url_for('explore', page=total_pages) }}" class="btn btn-outline-primary">{{ total_pages }}</a>
+        {% elif end_page < total_pages %}
+            <a href="{{ url_for('explore', page=total_pages) }}" class="btn btn-outline-primary">{{ total_pages }}</a>
+        {% endif %}
+
+        {% if page < total_pages %}
+            <a href="{{ url_for('explore', page=page+1) }}" class="btn btn-outline-primary">Next</a>
+            <a href="{{ url_for('explore', page=total_pages) }}" class="btn btn-outline-primary">Last</a>
+        {% endif %}
+    </div>
+</div>
+
 {% endblock %}

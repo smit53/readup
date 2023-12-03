@@ -196,21 +196,6 @@ def search():
         flash('Please log in to use the search functionality.', 'error')
         return redirect(url_for('login'))
 
-# @app.route('/search_results', methods=['GET'])
-# def search_results():
-#     if not is_user_logged_in():
-#         flash('Please log in to access this page.', 'error')
-#         return redirect(url_for('login'))
-#     user_id = session['user_id']
-#     query = request.args.get('query', '')
-    
-#     # Perform a search based on the query (customize this based on your needs)
-#     cursor.execute('SELECT b.*, CASE WHEN bm.user_id = %s THEN 1 ELSE 0 END AS is_bookmarked FROM books b LEFT JOIN bookmarks bm ON b.book_id = bm.book_id WHERE title LIKE %s OR authors LIKE %s;', (user_id, f'%{query}%', f'%{query}%'))
-#     search_results = cursor.fetchall()
-#     print(search_results)
-#     return render_template('search_results.html', query=query, results=search_results)
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':

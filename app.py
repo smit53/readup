@@ -8,22 +8,22 @@ import pymysql
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 
-# db_config = {
-#     'user': RDSConfig.USERNAME,
-#     'password': RDSConfig.PASSWORD,
-#     'host': RDSConfig.ENDPOINT,
-#     'port': RDSConfig.PORT,
-#     'database': RDSConfig.DATABASE_NAME
-# }
-
 db_config = {
-    'user': 'root',
-    'password': 'root',
-    'host': '127.0.0.1',
-    'port': 3306,
-    'database': 'library',
-    'raise_on_warnings': True
+    'user': 'admin',
+    'password': 'readup!23',
+    'host': 'readup.c0zsjrlq9g3c.us-east-1.rds.amazonaws.com',
+    'port': 3006,
+    'database': 'readup'
 }
+
+# db_config = {
+#     'user': 'root',
+#     'password': 'root',
+#     'host': '127.0.0.1',
+#     'port': 3306,
+#     'database': 'library',
+#     'raise_on_warnings': True
+# }
 
 conn = mysql.connector.connect(**db_config)
 # conn = pymysql.connect(**db_config)

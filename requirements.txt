@@ -1,5 +1,5 @@
 flask
-mysql
+mysql-connector-python
 math
 secrets
 pymysql
